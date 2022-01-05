@@ -20,7 +20,7 @@ class MemberJpaRepositoryTest {
     MemberJpaRepository memberJpaRepository;
 
     @Autowired
-    TeamRepository teamRepository;
+    TeamJpaRepository teamJpaRepository;
 
     @Test
     public void testMember() {
@@ -35,7 +35,7 @@ class MemberJpaRepositoryTest {
     }
 
     @Test
-    public void memberCRUD() {
+    public void basicCRUD() {
         Member member1 = new Member("member1");
         Member member2 = new Member("member2");
         memberJpaRepository.save(member1);
@@ -62,43 +62,6 @@ class MemberJpaRepositoryTest {
         assertThat(deletedCount).isEqualTo(0);
     }
 
-    @Test
-    @Rollback(value = false)
-    public void teamCRUD() {
-        Team teamA = new Team("teamA");
-        Team teamB = new Team("teamB");
-        teamRepository.save(teamA);
-        teamRepository.save(teamB);
 
-        Member member1 = new Member("member1", 10, teamA);
-        Member member2 = new Member("member2", 20, teamA);
-        Member member3 = new Member("member3", 30, teamB);
-        Member member4 = new Member("member4", 40, teamB);
-        memberJpaRepository.save(member1);
-        memberJpaRepository.save(member2);
-        memberJpaRepository.save(member3);
-        memberJpaRepository.save(member4);
-
-        Team findTeamA = teamRepository.findById(member1.getTeam().getId()).get();
-        Team findTeamB = teamRepository.findById(member3.getTeam().getId()).get();
-
-        assertThat(findTeamA).isEqualTo(member1.getTeam());
-        assertThat(findTeamB).isEqualTo(member3.getTeam());
-
-        List<Team> teamList = teamRepository.findAll();
-        assertThat(teamList.size()).isEqualTo(2);
-
-        long teamCount = teamRepository.count();
-        assertThat(teamCount).isEqualTo(2);
-
-        memberJpaRepository.delete(member1);
-        memberJpaRepository.delete(member2);
-        memberJpaRepository.delete(member3);
-        memberJpaRepository.delete(member4);
-        teamRepository.delete(teamA);
-        teamRepository.delete(teamB);
-        long deleteCount = teamRepository.count();
-        assertThat(deleteCount).isEqualTo(0);
-    }
 
 }
