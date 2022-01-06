@@ -14,6 +14,7 @@ import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest
 @Transactional
+@Rollback(value = false)
 class MemberJpaRepositoryTest {
 
     @Autowired
@@ -62,6 +63,19 @@ class MemberJpaRepositoryTest {
         assertThat(deletedCount).isEqualTo(0);
     }
 
+    @Test
+    public void findByUsernameAndAgeGreaterThen() {
+        Member member1 = new Member("AAA", 10);
+        Member member2 = new Member("BBB", 20);
+        memberJpaRepository.save(member1);
+        memberJpaRepository.save(member2);
+
+        List<Member> result = memberJpaRepository.findByUsernameAndAgeGreaterThen("BBB", 15);
+
+        assertThat(result.get(0).getUsername()).isEqualTo("BBB");
+        assertThat(result.get(0).getAge()).isEqualTo(20);
+        assertThat(result.size()).isEqualTo(1);
+    }
 
 
 }
