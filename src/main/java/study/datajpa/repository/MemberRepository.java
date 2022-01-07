@@ -3,14 +3,13 @@ package study.datajpa.repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
-import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import study.datajpa.dto.MemberDto;
 import study.datajpa.entity.Member;
 
+import javax.persistence.LockModeType;
+import javax.persistence.QueryHint;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -68,8 +67,18 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     // => MemberEntity 에 NamedEntityGraph 참조 와 name 설정 값인 아래 findNamedEntityGraphByUsername (Member.all) 참조
     @EntityGraph("Member.all")
     List<Member> findNamedEntityGraphByUsername(@Param("username") String username);
-    
+
     //EntityGraph, NamedEntityGraph 는 JPA 표준 스펙으로 제공하는 기능
+
     /****************************************************************************************/
+
+    @QueryHints(value = @QueryHint(name = "org.hibernate.readOnly", value = "true"))
+    Member findReadlOnlyByUsername(String username);
+
+    /**
+     * jpa 가 제공하는 annotation
+     */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    List<Member> findLockByUsername(String username);
 
 }

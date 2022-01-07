@@ -379,4 +379,38 @@ class MemberRepositoryTest {
 
         //then
     }
+
+    /**
+     * hints 속성을 사용하면 readOnly 등 적용을 하여 dirty checking 을 진행하지 않는다.
+     * 웬만하면 쓰지 말자..100% readOnly를 찾기 힘들 뿐더러 최적화 하더라도 미비 할 수 있다. 무조건 테스트 해본 뒤 중요한 이점이 있을경우 적용하자.
+     * 캐시를 준비하자.
+     */
+    @Test
+    public void queryHint() throws Exception {
+        //given
+        Member member1 = memberRepository.save(new Member("member1", 10));
+        em.flush();
+        em.clear();
+
+        //when
+        Member findMember = memberRepository.findReadlOnlyByUsername("member1");
+        findMember.changeName("member2");
+
+        em.flush();
+        //then
+    }
+
+    @Test
+    public void lock() throws Exception {
+        //given
+        Member member1 = new Member("member1", 10);
+        memberRepository.save(member1);
+        em.flush();
+        em.clear();
+
+        //when
+        List<Member> result = memberRepository.findLockByUsername(member1.getUsername());
+
+        //then
+    }
 }
