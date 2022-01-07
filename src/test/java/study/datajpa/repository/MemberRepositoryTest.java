@@ -79,7 +79,7 @@ class MemberRepositoryTest {
 
         //then
         //조회시 없으면 IndexOutOfBoundsException 발생
-        IndexOutOfBoundsException thrown = Assertions.assertThrows(IndexOutOfBoundsException.class, () -> memberRepository.findByUsernameAndAgeGreaterThan("AAA", 15));
+        //IndexOutOfBoundsException thrown = Assertions.assertThrows(IndexOutOfBoundsException.class, () -> memberRepository.findByUsernameAndAgeGreaterThan("AAA", 15));
 
         assertThat(result.get(0).getUsername()).isEqualTo("BBB");
         assertThat(result.get(0).getAge()).isEqualTo(20);
@@ -99,7 +99,7 @@ class MemberRepositoryTest {
     @Test
     public void findUsernameList() {
         Member m1 = new Member("AAA", 10);
-        Member m2 = new Member("AAA", 20);
+        Member m2 = new Member("BBB", 20);
         memberRepository.save(m1);
         memberRepository.save(m2);
 
@@ -108,6 +108,8 @@ class MemberRepositoryTest {
         for (String s : usernameList) {
             System.out.println("s = " + s);
         }
+        assertThat(usernameList.get(0)).isEqualTo("AAA");
+        assertThat(usernameList.get(1)).isEqualTo("BBB");
     }
 
     @Test
