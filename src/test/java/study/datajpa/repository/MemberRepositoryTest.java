@@ -1,7 +1,5 @@
 package study.datajpa.repository;
 
-import org.aspectj.lang.annotation.Before;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -10,7 +8,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 import study.datajpa.dto.MemberDto;
 import study.datajpa.entity.Member;
@@ -271,6 +268,35 @@ class MemberRepositoryTest {
 //        assertThat(page.getTotalPages()).isEqualTo(2);
         assertThat(page.isFirst()).isTrue();
         assertThat(page.hasNext()).isTrue();
+
+    }
+
+    /**
+     * save 를 통해 영속성 컨텍스트가 관리 중인데, 쿼리가 적용이 안된 시점에 벌크 연산을 실행하면 데이터가 서로 안 맞을 수 있다.
+     */
+    @Test
+    public void bulkUpdate() throws Exception {
+        //given
+        memberRepository.save(new Member("member1", 10));
+        memberRepository.save(new Member("member2", 19));
+        memberRepository.save(new Member("member3", 20));
+        memberRepository.save(new Member("member4", 21));
+        memberRepository.save(new Member("member5", 35));
+
+        //when
+        int resultCount = memberRepository.bulkAgePlus(20);
+        //영속성 컨텍스트 때문에 영속성 컨텍스트를 초기화 한다.
+        //em.flush(); //jpa 기본동작이 이러한 save, select 등을 진행한다면 jpql 실행전 디비에 한번 반영 한다.(em.flush())
+        //db 에는 36살로 적용되어 있지만 영속성 컨텍스트에 의해 35살로 불러와 진다. 이러한 이유에서 em.clear()를 진행하지만
+        //또 다른 방법 으로는 @Modifying(clearAutomatically = false) 를 적용한다.
+        //적용시 이 쿼리가 나간후에, em.clear()를 자동으로 실행 해 준다.
+        //em.clear();
+        List<Member> result = memberRepository.findByUsername("member5");
+        Member member5 = result.get(0);
+
+        //then
+        assertThat(resultCount).isEqualTo(3);
+        assertThat(member5.getAge()).isEqualTo(36);
 
     }
 }
