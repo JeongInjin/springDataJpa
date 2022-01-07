@@ -1,11 +1,9 @@
 package study.datajpa.repository;
 
-import org.aspectj.lang.annotation.Before;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 import study.datajpa.entity.Member;
 import study.datajpa.entity.Team;
@@ -14,7 +12,6 @@ import javax.persistence.EntityManager;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @Transactional
@@ -27,12 +24,12 @@ class TeamJpaRepositoryTest {
     @Autowired
     EntityManager em;
 
-    //Test 전 마다 매번 실행된다.
-    @Before("")
-    public void initialize() {
-        em.flush();
-        em.clear();
+    @BeforeEach
+    public void init() {
+        em.createQuery("delete from Member m").executeUpdate();
+        em.createQuery("delete from Team t").executeUpdate();
     }
+
 
     @Test
     public void teamCRUD() {

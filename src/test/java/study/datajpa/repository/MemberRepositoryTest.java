@@ -1,6 +1,7 @@
 package study.datajpa.repository;
 
 import org.aspectj.lang.annotation.Before;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -34,13 +35,6 @@ class MemberRepositoryTest {
     TeamRepository teamRepository;
     @Autowired
     EntityManager em;
-
-    //Test 전 마다 매번 실행된다.
-    @Before("")
-    public void initialize() {
-        em.flush();
-        em.clear();
-    }
 
     @Test
     public void testMember() {

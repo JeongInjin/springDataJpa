@@ -1,5 +1,7 @@
 package study.datajpa.repository;
 
+import org.aspectj.lang.annotation.Before;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -8,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import study.datajpa.entity.Member;
 import study.datajpa.entity.Team;
 
+import javax.persistence.EntityManager;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,6 +24,8 @@ class TeamRepositoryTest {
     MemberJpaRepository memberJpaRepository;
     @Autowired
     TeamRepository teamRepository;
+    @Autowired
+    EntityManager em;
 
     @Test
     @Rollback(value = false)
