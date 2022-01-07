@@ -1,5 +1,6 @@
 package study.datajpa.repository;
 
+import org.aspectj.lang.annotation.Before;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -8,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import study.datajpa.entity.Member;
 import study.datajpa.entity.Team;
 
+import javax.persistence.EntityManager;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
@@ -19,9 +21,17 @@ class MemberJpaRepositoryTest {
 
     @Autowired
     MemberJpaRepository memberJpaRepository;
-
     @Autowired
     TeamJpaRepository teamJpaRepository;
+    @Autowired
+    EntityManager em;
+
+    //Test 전 마다 매번 실행된다.
+    @Before("")
+    public void initialize() {
+        em.flush();
+        em.clear();
+    }
 
     @Test
     public void testMember() {
