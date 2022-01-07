@@ -299,4 +299,84 @@ class MemberRepositoryTest {
         assertThat(member5.getAge()).isEqualTo(36);
 
     }
+
+    //Entity Graph - LAZY
+    @Test
+    public void findMemberLazy() throws Exception {
+        //given
+        //member1 -> teamA
+        //member2 -> teamB
+
+        Team teamA = new Team("teamA");
+        Team teamB = new Team("teamB");
+        Team teamC = new Team("teamC");
+        teamRepository.save(teamA);
+        teamRepository.save(teamB);
+        teamRepository.save(teamC);
+        Member member1 = new Member("member1", 10, teamA);
+        Member member2 = new Member("member1", 10, teamB);
+        Member member3 = new Member("member2", 10, teamC);
+        memberRepository.save(member1);
+        memberRepository.save(member2);
+        memberRepository.save(member3);
+
+        em.flush();
+        em.clear();
+
+        //when
+        //select Member - (1)
+        System.out.println("===============================================================");
+        //N + 1 발생 시킴
+        List<Member> members = memberRepository.findAll();
+        //지연로딩으로 인한 N + 1 문제
+        //(N)
+        for (Member member : members) {
+            System.out.println("member = " + member.getTeam().getClass());
+            System.out.println("member.class = " + member.getUsername());
+            System.out.println("member.team = " + member.getTeam());
+        }
+        em.clear();
+        System.out.println("1차 수정 fetch join 적용 **************************************");
+        //패치조인으로 N + 1 해결하기.
+        //fetch 조인방식은 jpql 을 계속 써야 한다는 단점이 있다.
+        List<Member> memberFetchJoin = memberRepository.findMemberFetchJoin();
+        for (Member member : memberFetchJoin) {
+            System.out.println("member = " + member.getTeam().getClass());
+            System.out.println("member.class = " + member.getUsername());
+            System.out.println("member.team = " + member.getTeam());
+        }
+        em.clear();
+        System.out.println("2차 수정 EntityGraph 적용 *********************************************************");
+        List<Member> memberFindAll = memberRepository.findMemberEntityGraph();
+        for (Member member : memberFindAll) {
+            System.out.println("member = " + member.getTeam().getClass());
+            System.out.println("member.class = " + member.getUsername());
+            System.out.println("member.team = " + member.getTeam());
+        }
+        em.clear();
+        System.out.println("3차 메서드 이름 으로 생성 및 EntityGraph 적용 *************************************");
+        //회원데이터 쓸때 팀 데이터 쓸일이 많다..할때 쓸만할 듯.
+        List<Member> methodGraphByUsername = memberRepository.findEntityGraphByUsername("member1");
+        for (Member member : methodGraphByUsername) {
+            System.out.println("member = " + member.getTeam().getClass());
+            System.out.println("member.class = " + member.getUsername());
+            System.out.println("member.team = " + member.getTeam());
+        }
+        em.clear();
+        System.out.println("4차 NamedEntityGraph 로 생성 적용 *************************************************");
+        List<Member> namedEntityGraphByUsername = memberRepository.findNamedEntityGraphByUsername("member1");
+        for (Member member : methodGraphByUsername) {
+            System.out.println("member = " + member.getTeam().getClass());
+            System.out.println("member.class = " + member.getUsername());
+            System.out.println("member.team = " + member.getTeam());
+        }
+        em.clear();
+        System.out.println("===============================================================");
+
+        /**
+         * 결론 : 간단할 경우에는 EntityGraph annotation 을 이용하고, 복잡성이 높아지면 fetch 조인으로 쿼리를 작성한다.
+         */
+
+        //then
+    }
 }
