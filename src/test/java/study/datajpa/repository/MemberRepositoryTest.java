@@ -440,4 +440,56 @@ class MemberRepositoryTest {
         //then
         assertThat(result.size()).isEqualTo(2);
     }
+
+    @Test
+    public void projections() throws Exception {
+        //given
+        Team teamA = new Team("teamA");
+        em.persist(teamA);
+
+        Member m1 = new Member("m1", 0, teamA);
+        Member m2 = new Member("m2", 0, teamA);
+        em.persist(m1);
+        em.persist(m2);
+
+        em.flush();
+        em.clear();
+
+        //when
+        List<UsernameOnly> result = memberRepository.findProjectionByUsername("m1");
+        for (UsernameOnly usernameonly : result) {
+            System.out.println("===============================");
+            System.out.println("UsernameOnly = " + usernameonly.getUsername());
+        }
+
+        List<UsernameOnlyDto> result2 = memberRepository.findProjectionDtoByUsername("m1");
+        for (UsernameOnlyDto usernameOnlyDto : result2) {
+            System.out.println("===============================");
+            System.out.println("usernameOnlyDto = " + usernameOnlyDto.getUsername());
+        }
+
+        //동적 projections
+        List<UsernameOnlyDto> result3 = memberRepository.findProjectionClassTypeByUsername("m1", UsernameOnlyDto.class);
+        for (UsernameOnlyDto usernameOnlyDto : result3) {
+            System.out.println("===============================");
+            System.out.println("usernameOnlyDto = " + usernameOnlyDto.getUsername());
+        }
+
+        //중첩구조 처리 - 2번째 DTO 부터는 최적화가 안된다.(left outer join)
+        //프로젝션 대상이 ROOT 엔티티면 JPQL SELECT 절 최적화 가능
+        //프로젝션 대상이 ROOT 가 아니면, LEFT OUTER JOIN 처리 -> 모든 필드를 SELECT 해서 엔티티로 조회한 다음에 계산
+        List<NestedClosedProjections> result4 = memberRepository.findProjectionClassTypeByUsername("m1", NestedClosedProjections.class);
+        for (NestedClosedProjections nestedClosedProjections : result4) {
+            System.out.println("===============================");
+            System.out.println("nestedClosedProjections.Username = " + nestedClosedProjections.getUsername());
+            System.out.println("nestedClosedProjections.TeamName = " + nestedClosedProjections.getTeam().getName());
+        }
+
+        //then
+        assertThat(result.get(0).getUsername()).isEqualTo("m1");
+        assertThat(result2.get(0).getUsername()).isEqualTo("m1");
+        assertThat(result3.get(0).getUsername()).isEqualTo("m1");
+        assertThat(result4.get(0).getUsername()).isEqualTo("m1");
+        assertThat(result4.get(0).getTeam().getName()).isEqualTo("teamA");
+    }
 }
