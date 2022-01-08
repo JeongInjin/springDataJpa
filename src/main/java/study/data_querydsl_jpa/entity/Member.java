@@ -10,7 +10,7 @@ import javax.persistence.*;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED) // protected Member() {}
-@ToString(of = {"id", "username", "age"})
+@ToString(of = {"id", "username", "age"}) //Team 을 넣으면 양방향 참조가 일어나서 오류가 발생한다.
 @NamedEntityGraph(name = "Member.all", attributeNodes = @NamedAttributeNode("team"))
 public class Member extends BaseEntity {
 
@@ -26,7 +26,7 @@ public class Member extends BaseEntity {
     private Team team;
 
     public Member(String username) {
-        this.username = username;
+        this(username, 0);
     }
 
     public Member(String username, int age) {

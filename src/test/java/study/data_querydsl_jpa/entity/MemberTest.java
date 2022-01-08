@@ -1,5 +1,6 @@
 package study.data_querydsl_jpa.entity;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -25,6 +26,11 @@ class MemberTest {
     @Autowired
     MemberRepository memberRepository;
 
+    @BeforeEach
+    public void init() {
+        em.createQuery("delete from Member m").executeUpdate();
+        em.createQuery("delete from Team t").executeUpdate();
+    }
 
     @Test
     public void testEntity() throws Exception {
@@ -49,11 +55,24 @@ class MemberTest {
 
         List<Member> members = em.createQuery("select m from Member m", Member.class)
                 .getResultList();
-
+        System.out.println("===============================================");
         for (Member member : members) {
             System.out.println("member = " + member);
             System.out.println("-> member.team = " + member.getTeam());
         }
+        System.out.println("===============================================");
+        Team teamC = new Team("teamC");
+        em.persist(teamC);
+        member1.changeTeam(teamC);
+        memberRepository.save(member1);
+
+        em.flush();
+        em.clear();
+        Optional<Member> findMember = memberRepository.findById(member1.getId());
+
+        assertThat(findMember.get().getUsername()).isEqualTo("member1");
+        assertThat(findMember.get().getTeam().getName()).isEqualTo("teamC");
+
     }
 
     @Test

@@ -12,20 +12,18 @@ import study.data_querydsl_jpa.dto.MemberDto;
 import study.data_querydsl_jpa.entity.Member;
 import study.data_querydsl_jpa.repository.MemberRepository;
 
-import javax.annotation.PostConstruct;
-
 @RestController
 @RequiredArgsConstructor
 public class MemberController {
 
     private final MemberRepository memberRepository;
 
-    @PostConstruct
-    public void init() {
-        for (int i = 0; i < 100; i++) {
-            memberRepository.save(new Member("member" + i, i));
-        }
-    }
+//    @PostConstruct
+//    public void init() {
+//        for (int i = 0; i < 100; i++) {
+//            memberRepository.save(new Member("member" + i, i));
+//        }
+//    }
 
     @GetMapping("/members/{id}")
     public String findMember(@PathVariable("id") Long id) {
