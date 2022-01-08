@@ -413,4 +413,24 @@ class MemberRepositoryTest {
 
         //then
     }
+
+    /*
+     * 추후 queryDsl 쓸경우 많이 쓴다.
+     * */
+    @Test
+    public void callCustom() throws Exception {
+        //given
+        Member member1 = new Member("member1", 10);
+        Member member2 = new Member("member2", 20);
+        memberRepository.save(member1);
+        memberRepository.save(member2);
+//        em.flush();
+//        em.clear();
+
+        //when
+        List<Member> result = memberRepository.findMemberCustom();
+
+        //then
+        assertThat(result.size()).isEqualTo(2);
+    }
 }
