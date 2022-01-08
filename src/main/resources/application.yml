@@ -13,7 +13,17 @@ spring:
         #        show_sql: true
         format_sql: true
         default_batch_fetch_size: 1000 #최적화 옵션
-    open-in-view: true #default true
+    open-in-view: true #default true -> 영속성 컨텍스 생존 범위 false 로 두는게 좋은듯 하다. 커넥션이 금방 말라버릴 수 있다.
+  #  true 일 경우 영속성 컨텍스트가 트랜잭션 범위를 넘어선 레이어까지 살아있다.
+  #  Api 라면 클라이언트에게 응답될 때까지, View 라면 View 가 렌더링될 때까지 영속성컨텍스트가 살아있다.
+  #  false 일 경우 트랜잭션을 종료할 때 영속성 컨텍스트 또한 닫힌다.
+
+  data:
+    web:
+      pageable:
+        default-page-size: 10
+        max-page-size: 2000
+        one-indexed-parameters: true
 
 logging.level:
   org.hibernate.SQL: debug
