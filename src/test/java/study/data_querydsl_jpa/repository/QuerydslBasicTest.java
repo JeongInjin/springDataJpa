@@ -152,6 +152,7 @@ public class QuerydslBasicTest {
     }
 
     /**
+     * 반환 타입
      * fetch() : 리스트 조회, 데이터 없으면 빈 리스트 반환 fetchOne() : 단 건 조회
      * 결과가 없으면 : null
      * 결과가 둘 이상이면 : com.querydsl.core.NonUniqueResultException fetchFirst() : limit(1).fetchOne()
@@ -162,10 +163,12 @@ public class QuerydslBasicTest {
         //given
         //when
 
+        //list 조회
         List<Member> fetch = queryFactory
                 .selectFrom(member)
                 .fetch();
 
+        //단 건
         Member fetchOne = queryFactory
                 .selectFrom(member)
                 .where(
@@ -173,12 +176,14 @@ public class QuerydslBasicTest {
                 )
                 .fetchOne();
 
+        //처음 한 건 조회
         Member fetchFirst = queryFactory
                 .selectFrom(member)
                 .fetchFirst();
         //fetchFirst() 같음 -> limit(1).fetchOne();
 
         //공식 홈페이지 에서는 fetchResults 보다 fetch 를 권장 하고있음. ->복잡한 쿼리에서는 데이터가 다를 수 있다.
+        //페이징 에서 사용
         QueryResults<Member> results = queryFactory
                 .selectFrom(member)
                 .fetchResults();
@@ -187,10 +192,42 @@ public class QuerydslBasicTest {
         List<Member> content = results.getResults();
 
         //fetch 를 사용을 권장함 복잡한 쿼리에서는 정상적인 작동을 보장 받을 수 없고, 따로 count 를 구하는 쿼리 생성을 추가.
+        //count 쿼리로 변경
         long total = queryFactory
                 .selectFrom(member)
                 .fetchCount();
 
         //then
     }
+
+    /**
+     * 회원 정렬 순서
+     * 1. 회원 나이 내림차순(desc)
+     * 2. 회원 이름 올림차순(asc)
+     * 단 2에서 회원 이름이 없으면 마지막에 출력(nulls last)
+     */
+    @Test
+    public void sort() throws Exception {
+        //given
+        em.persist(new Member(null, 100));
+        em.persist(new Member("member5", 100));
+        em.persist(new Member("member6", 100));
+
+        //when
+        List<Member> result = queryFactory
+                .selectFrom(member)
+                .where(member.age.eq(100))
+                .orderBy(member.age.desc(), member.username.asc().nullsLast())
+                .fetch();
+
+        Member member5 = result.get(0);
+        Member member6 = result.get(1);
+        Member memberNull = result.get(2);
+
+        //then
+        assertThat(member5.getUsername()).isEqualTo("member5");
+        assertThat(member6.getUsername()).isEqualTo("member6");
+        assertThat(memberNull.getUsername()).isNull();
+    }
+
 }
