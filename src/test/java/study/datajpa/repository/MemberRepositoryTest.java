@@ -492,4 +492,67 @@ class MemberRepositoryTest {
         assertThat(result4.get(0).getUsername()).isEqualTo("m1");
         assertThat(result4.get(0).getTeam().getName()).isEqualTo("teamA");
     }
+
+    /**
+     * NativeQuery Test
+     * 한계가 있다..추천하지 않는 방식, 정말 어쩔 수 없을때 사용..
+     * sort 파라미터를 통한 정렬이 정상 동작하지 않을 수 있음(믿지 말고 직접 처리)
+     * JPQL 처럼 애플리케이션 로딩 시점에 문법 확인 불가
+     * 동적 쿼리 불가..등등
+     * 네이티브 SQL 을 DTO 로 조회할 때는 JdbcTemplage or Mybatis 권장
+     *
+     * @throws Exception
+     */
+    @Test
+    public void nativeQuery() throws Exception {
+        //given
+        Team teamA = new Team("teamA");
+        em.persist(teamA);
+
+        Member m1 = new Member("m1", 0, teamA);
+        Member m2 = new Member("m2", 0, teamA);
+        em.persist(m1);
+        em.persist(m2);
+
+        em.flush();
+        em.clear();
+
+        //when
+        Member result = memberRepository.findByNativeQuery("m1");
+        System.out.println(result);
+
+        //then
+    }
+
+    /**
+     * 네이티브 쿼리 + Projections 활용
+     * DTO 를 뽑는데 네이티브 쿼리이면서,  동적 쿼리는 아닌경우에 활용 가능.
+     * 페이징 가능.
+     */
+    @Test
+    public void nativeProjectionQuery() throws Exception {
+//given
+        Team teamA = new Team("teamA");
+        em.persist(teamA);
+
+        Member m1 = new Member("m1", 0, teamA);
+        Member m2 = new Member("m2", 0, teamA);
+        em.persist(m1);
+        em.persist(m2);
+
+        em.flush();
+        em.clear();
+
+        //when
+        Page<MemberProjection> result = memberRepository.findByNativeProjection(PageRequest.of(0, 10));
+        List<MemberProjection> content = result.getContent();
+        for (MemberProjection memberProjection : content) {
+            System.out.println("=============================================================");
+            System.out.println("memberProjection.username = " + memberProjection.getUsername());
+            System.out.println("memberProjection.teamName = " + memberProjection.getTeamname());
+        }
+
+        //then
+        assertThat(content.size()).isEqualTo(2);
+    }
 }

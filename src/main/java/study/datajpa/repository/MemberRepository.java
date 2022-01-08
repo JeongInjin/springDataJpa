@@ -90,4 +90,13 @@ public interface MemberRepository extends JpaRepository<Member, Long>, MemberRep
 
     <T> List<T> findProjectionClassTypeByUsername(String username, Class<T> type);
 
+    @Query(value = "select * from member where username = ?", nativeQuery = true)
+    Member findByNativeQuery(String username);
+
+    //다음줄 넘길 때 " " 빈칸 꼭 넣어주자..오류 발생하고, 찾기도 힘듦..
+    @Query(value = "select m.member_id as id, m.username, t.name as teamName from member m " +
+            "left join team t",
+            countQuery = "select count(*) from member",
+            nativeQuery = true)
+    Page<MemberProjection> findByNativeProjection(Pageable pageable);
 }
