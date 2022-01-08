@@ -1,7 +1,8 @@
 plugins {
-	id 'org.springframework.boot' version '2.6.2'
-	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
-	id 'java'
+    id 'org.springframework.boot' version '2.6.2'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id "com.ewerk.gradle.plugins.querydsl" version "1.0.10" //querydsl 추가 (1)querydsl 플러그인을 추가합니다.
+    id 'java'
 }
 
 group = 'study'
@@ -9,25 +10,76 @@ version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '11'
 
 configurations {
-	compileOnly {
-		extendsFrom annotationProcessor
-	}
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
 }
 
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.8.0'
-	compileOnly 'org.projectlombok:lombok'
-	runtimeOnly 'com.h2database:h2'
-	annotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.8.0'
+    compileOnly 'org.projectlombok:lombok'
+    implementation 'com.querydsl:querydsl-jpa' //querydsl 추가 (2)라이브러리 dependency 를 추가합니다.
+    runtimeOnly 'com.h2database:h2'
+    annotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
 test {
-	useJUnitPlatform()
+    useJUnitPlatform()
 }
+//querydsl 추가 시작 ------------------------------------------------------------------------------------
+def querydslDir = "$buildDir/generated/querydsl" // (3)querydsl 에서 사용할 경로를 선언합니다.
+
+querydsl {
+    library = "com.querydsl:querydsl-apt"
+    jpa = true
+    querydslSourcesDir = querydslDir
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/main/java', querydslDir]
+        }
+    }
+}
+
+compileQuerydsl {
+    options.annotationProcessorPath = configurations.querydsl
+}
+
+configurations {
+    querydsl.extendsFrom compileClasspath
+}
+
+/*def querydslDir = "$buildDir/generated/querydsl" // (3)querydsl 에서 사용할 경로를 선언합니다.
+
+querydsl { // (4)querydsl 설정을 추가합니다. JPA 사용 여부와 사용할 경로를 지정하였습니다.
+    jpa = true
+    querydslSourcesDir = querydslDir
+}
+
+sourceSets { // (5)build 시 사용할 sourceSet 을 추가합니다.
+    main.java.srcDir querydslDir
+}
+
+configurations { // (6)querydsl 이 compileClassPath 를 상속하도록 설정합니다.
+    querydsl.extendsFrom compileClasspath
+}
+
+compileQuerydsl { // (7)querydsl 컴파일시 사용할 옵션을 설정합니다.
+    options.annotationProcessorPath = configurations.querydsl
+}*/
+//querydsl 추가 끝 --------------------------------------------------------------------------------------
+/*
+compileQuerydsl.doFirst {
+    if (file(querydslDir).exists())
+        delete(file(querydslDir))
+}
+*/
