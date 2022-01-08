@@ -1,5 +1,6 @@
 package study.datajpa.repository;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -32,6 +33,12 @@ class MemberRepositoryTest {
     TeamRepository teamRepository;
     @Autowired
     EntityManager em;
+
+    @BeforeEach
+    public void init() {
+        em.createQuery("delete from Member m").executeUpdate();
+        em.createQuery("delete from Team t").executeUpdate();
+    }
 
     @Test
     public void testMember() {
