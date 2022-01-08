@@ -1,5 +1,6 @@
 package study.data_querydsl_jpa.repository;
 
+import com.querydsl.core.QueryResults;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,6 +12,7 @@ import study.data_querydsl_jpa.entity.QMember;
 import study.data_querydsl_jpa.entity.Team;
 
 import javax.persistence.EntityManager;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static study.data_querydsl_jpa.entity.QMember.member;
@@ -147,5 +149,48 @@ public class QuerydslBasicTest {
         //then
         assertThat(findMember.getUsername()).isEqualTo("member1");
         assertThat(findMember2.getUsername()).isEqualTo("member2");
+    }
+
+    /**
+     * fetch() : 리스트 조회, 데이터 없으면 빈 리스트 반환 fetchOne() : 단 건 조회
+     * 결과가 없으면 : null
+     * 결과가 둘 이상이면 : com.querydsl.core.NonUniqueResultException fetchFirst() : limit(1).fetchOne()
+     * fetchResults() : 페이징 정보 포함, total count 쿼리 추가 실행 fetchCount() : count 쿼리로 변경해서 count 수 조회
+     */
+    @Test
+    public void resultFetch() throws Exception {
+        //given
+        //when
+
+        List<Member> fetch = queryFactory
+                .selectFrom(member)
+                .fetch();
+
+        Member fetchOne = queryFactory
+                .selectFrom(member)
+                .where(
+                        member.username.eq("member1")
+                )
+                .fetchOne();
+
+        Member fetchFirst = queryFactory
+                .selectFrom(member)
+                .fetchFirst();
+        //fetchFirst() 같음 -> limit(1).fetchOne();
+
+        //공식 홈페이지 에서는 fetchResults 보다 fetch 를 권장 하고있음. ->복잡한 쿼리에서는 데이터가 다를 수 있다.
+        QueryResults<Member> results = queryFactory
+                .selectFrom(member)
+                .fetchResults();
+
+        results.getTotal();
+        List<Member> content = results.getResults();
+
+        //fetch 를 사용을 권장함 복잡한 쿼리에서는 정상적인 작동을 보장 받을 수 없고, 따로 count 를 구하는 쿼리 생성을 추가.
+        long total = queryFactory
+                .selectFrom(member)
+                .fetchCount();
+
+        //then
     }
 }
