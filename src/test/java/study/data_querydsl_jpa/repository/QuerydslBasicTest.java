@@ -756,7 +756,13 @@ public class QuerydslBasicTest {
     }
 
     /**
-     * quertdsl 은 3가지 방식을 지원한다.
+     * querydsl 은 3가지 방식을 지원한다. - Projections
+     * 프로퍼티 접근,
+     * 필드 직접
+     * 접근 생성자 사용
+     */
+
+    /**
      * 1.Setter 방식
      */
     @Test
@@ -828,7 +834,7 @@ public class QuerydslBasicTest {
     /**
      * 3-1.프로퍼티나, 필드 접근 생성 방식에서 이름이 다를 대 해결 방안
      * `ExpressionUtils.as(source.alias)`: 필드나, 서브 쿼리에 벌칭 적용
-     * `username.as(:nenberName"): 필드에 별칭 적용
+     * `username.as(:memberName"): 필드에 별칭 적용
      */
     @Test
     public void findDtoQuerydslByConstructor2() throws Exception {
