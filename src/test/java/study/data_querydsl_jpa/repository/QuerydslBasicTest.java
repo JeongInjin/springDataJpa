@@ -17,6 +17,7 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceUnit;
 import java.util.List;
 
+import static com.querydsl.jpa.JPAExpressions.select;
 import static org.assertj.core.api.Assertions.assertThat;
 import static study.data_querydsl_jpa.entity.QMember.member;
 import static study.data_querydsl_jpa.entity.QTeam.team;
@@ -446,6 +447,8 @@ public class QuerydslBasicTest {
     }
 
     //페치 조인 적용
+    //페치 조인은 SQL에서 제공하는 기능은 아니다. SQL조인을 활용해서 연관된 엔티티를 SQL 한번에
+    //조회하는 기능이다. 주로 성능 최적화에 사용하는 방법이다.
     @Test
     public void fetchJoin_Use() throws Exception {
         //given
@@ -465,5 +468,111 @@ public class QuerydslBasicTest {
         assertThat(loaded).as("페치 조인 적용").isTrue();
     }
 
+    /**
+     * 서브쿼리
+     * --------------------------------------------------------------------------------------
+     * from 절의 서브쿼리 한계 ->
+     * JPA JPQL 서브쿼리의 한계점으로 from 절의 서브쿼리(인라인 뷰)는 지원하지 않는다.
+     * 당연히 Querydsl(jqpl 빌더 역할) 도 지원하지 않는다.
+     * 하이버네이트 구현체를 사용하면 select 절의 서브쿼리는 지원한다.(jpa 표준 스펙에서는 select 에서 서브쿼리 지원을 하지않는다.)
+     * Querydsl 도 하이버네이트 구현체를 사용하면 select 절의 서브쿼리를 지원한다.
+     * <p>
+     * from 절의 서브쿼리 해결방안 ->
+     * 1. 서브쿼리를 join 으로 변경한다. (가능한 상황도 있고, 불가능한 상황도 있다.)
+     * 2. 애플리케이션에서 쿼리를 2번 분리해서 실행한다.
+     * 3. nativeSQL 을 사용한다.
+     * <p>
+     * from 절에서 서브쿼리 만들 시 주의 점 :
+     * sql 에서는 데이터만 가져오는 것으로 집중하고, view , format 던지 로직은 애플리케이션에서 처리 하는것을 생각해 보자.
+     * --------------------------------------------------------------------------------------
+     * JPAExpressions 키워드 사용해야하고 현재 코드에 안보이는 이유는 static import 적용
+     * 나이가 가장 많은 회원 조회
+     */
+    @Test
+    public void subQuery() throws Exception {
+        //given
+        QMember memberSub = new QMember("memberSub");
+
+        //when
+        List<Member> result = queryFactory
+                .selectFrom(member)
+                .where(member.age.eq(
+//                        JPAExpressions
+//                                .select(memberSub.age.max())
+//                                .from(memberSub)
+                        select(memberSub.age.max())
+                                .from(memberSub)
+                ))
+                .fetch();
+
+        //then
+        assertThat(result).extracting("age").containsExactly(40);
+    }
+
+    /**
+     * 서브쿼리
+     * 나이가 평균 이상인 조회
+     */
+    @Test
+    public void subQueryGoe() throws Exception {
+        //given
+        QMember memberSub = new QMember("memberSub");
+
+        //when
+        List<Member> result = queryFactory
+                .selectFrom(member)
+                .where(member.age.goe(
+                        select(memberSub.age.avg())
+                                .from(memberSub)
+                ))
+                .fetch();
+
+        //then
+        assertThat(result).extracting("age").containsExactly(30, 40);
+    }
+
+    /**
+     * 서브쿼리
+     * in 조건으로 10살 초과인 회원 조회
+     */
+    @Test
+    public void subQueryIn() throws Exception {
+        //given
+        QMember memberSub = new QMember("memberSub");
+
+        //when
+        List<Member> result = queryFactory
+                .selectFrom(member)
+                .where(member.age.in(
+                        select(memberSub.age)
+                                .from(memberSub)
+                                .where(memberSub.age.gt(10))
+                ))
+                .fetch();
+
+        //then
+        assertThat(result).extracting("age").containsExactly(20, 30, 40);
+    }
+
+    @Test
+    public void selectSubQuery() throws Exception {
+        //given
+        QMember memberSub = new QMember("memberSub");
+
+        //when
+        List<Tuple> result = queryFactory
+                .select(member.username,
+                        select(memberSub.age.avg())
+                                .from(memberSub)
+                )
+                .from(member)
+                .fetch();
+
+        for (Tuple tuple : result) {
+            System.out.println("tuple = " + tuple);
+        }
+
+        //then
+    }
 
 }
