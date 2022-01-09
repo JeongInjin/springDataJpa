@@ -1,5 +1,6 @@
 package study.data_querydsl_jpa.repository;
 
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.ExpressionUtils;
@@ -886,4 +887,81 @@ public class QuerydslBasicTest {
         //then
     }
 
+    /**
+     * 동적 쿼리 - BooleanBuilder 사용
+     * 동적 쿼리를 해결하는 두가지 방식
+     * BooleanBuilder
+     * Where 다중 파라미터 사용
+     */
+
+    //1.BooleanBuilder 사용
+    @Test
+    public void dynamicQuery_BolleanBuilder() throws Exception {
+        //given
+        String usernameParam = "member1";
+        Integer ageParam = 10;
+
+        //when
+        List<Member> result = searchMember1(usernameParam, ageParam);
+
+        //then
+        assertThat(result.size()).isEqualTo(1);
+    }
+
+    private List<Member> searchMember1(String usernameCond, Integer ageCond) {
+
+        //BooleanBuilder builder = new BooleanBuilder();
+        //방어코드 및 필수로 parameter 가 넘어온다고 가정하면 builder 에 초기값을 줄 수 있다. chaining 가능.
+        BooleanBuilder builder = new BooleanBuilder(member.username.eq(usernameCond).and(member.age.eq(ageCond)));
+        if (usernameCond != null) builder.and(member.username.eq(usernameCond));
+        if (ageCond != null) builder.and(member.age.eq(ageCond));
+
+        return queryFactory
+                .selectFrom(member)
+                .where(builder)
+                .fetch();
+    }
+
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
