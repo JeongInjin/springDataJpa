@@ -2,6 +2,7 @@ package study.data_querydsl_jpa.repository;
 
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -575,4 +576,47 @@ public class QuerydslBasicTest {
         //then
     }
 
+    /**
+     * case when 이러한 것들은 디비에서 불러오는 것 보다..상황에 따라 디비는 최소한의 데이터와 group 화해서 가져오고 애플리케이션 에서 처리 하자.
+     */
+    @Test
+    public void basicCase() throws Exception {
+        //given
+
+        //when
+        List<String> result = queryFactory
+                .select(member.age
+                        .when(10).then("열살")
+                        .when(20).then("스무살")
+                        .otherwise("기타")
+                )
+                .from(member)
+                .fetch();
+
+        for (String s : result) {
+            System.out.println("s = " + s);
+        }
+        //then
+    }
+
+    @Test
+    public void complexCase() throws Exception {
+        //given
+
+        //when
+        List<String> result = queryFactory
+                .select(new CaseBuilder()
+                        .when(member.age.between(0, 20)).then("0 ~ 20살")
+                        .when(member.age.between(21, 30)).then("21 ~ 30살")
+                        .otherwise("기타")
+                )
+                .from(member)
+                .fetch();
+
+        for (String s : result) {
+            System.out.println("s = " + s);
+        }
+
+        //then
+    }
 }
