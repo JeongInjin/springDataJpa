@@ -3,6 +3,7 @@ package study.data_querydsl_jpa.repository;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -582,7 +583,6 @@ public class QuerydslBasicTest {
     @Test
     public void basicCase() throws Exception {
         //given
-
         //when
         List<String> result = queryFactory
                 .select(member.age
@@ -602,7 +602,6 @@ public class QuerydslBasicTest {
     @Test
     public void complexCase() throws Exception {
         //given
-
         //when
         List<String> result = queryFactory
                 .select(new CaseBuilder()
@@ -619,4 +618,41 @@ public class QuerydslBasicTest {
 
         //then
     }
+
+    //상수
+    @Test
+    public void constant() throws Exception {
+        //given
+        //when
+        List<Tuple> result = queryFactory
+                .select(member.username, Expressions.constant("A"))
+                .from(member)
+                .fetch();
+
+        for (Tuple tuple : result) {
+            System.out.println("tuple = " + tuple);
+        }
+        //then
+    }
+
+    //문자 더하기
+    //ENUM 처리할때도 .stringValue() 를 사용하여 처리할 수 있다.
+    @Test
+    public void concat() throws Exception {
+        //given
+        //when
+        //{username}_{age}
+        List<String> fetch = queryFactory
+                .select(member.username.concat("_").concat(member.age.stringValue()))
+                .from(member)
+                .fetch();
+
+        for (String s : fetch) {
+            System.out.println("s = " + s);
+        }
+
+        //then
+    }
+
+
 }
