@@ -29,6 +29,7 @@ import static study.data_querydsl_jpa.entity.QTeam.team;
  * 왜냐하면 여기서 스프링이 주입해주는 엔티티 매니저는 실제 동작 시점에 진짜 엔티티 매니저를 찾아주는 프록시용 가짜 엔티티 매니저이다.
  * 이 가짜 엔티티 매니저는 실제 사용 시점에 트랜잭션 단위로 실제 엔티티 매니저(영속성 컨텍스트)를 할당해준다.
  */
+//순수 JPA 코드들
 @Repository
 public class MemberQuerydslJpaRepository {
     private final EntityManager em;
