@@ -1010,6 +1010,7 @@ public class QuerydslBasicTest {
 
     /**
      * 수정, 삭제 벌크 연산
+     * 주의 : JPQL 배치와 마찬가지로, 영속성 컨텍스트에 있는 엔티티를 무시하고 실행되기 때문에 배치 쿼리를 실행하고 나면 영속성 컨텍스트를 초기화 하는 것이 안전하다.
      * bulk 연산은 영속성 컨텍스트를 무시하고 쿼리를 날려버린다.
      */
     @Test
@@ -1093,6 +1094,54 @@ public class QuerydslBasicTest {
 
         //then
     }
+
+    /**
+     * SQL function 호출하기
+     * SQL function 은 JPA 와 같이 Dialect 에 등록된 내용만 호출할 수 있다.
+     */
+    @Test
+    public void sqlFunction() throws Exception {
+        //given
+        //when
+        List<String> result = queryFactory
+                .select(Expressions.stringTemplate("function('replace', {0}, {1}, {2})", member.username, "member", "M"))
+                .from(member)
+                .fetch();
+
+        for (String s : result) {
+            System.out.println("s = " + s);
+        }
+
+        //then
+    }
+
+    @Test
+    public void sqlFunction2() throws Exception {
+        //given
+        //when
+        List<String> result = queryFactory
+                .select(member.username)
+                .from(member)
+                .where(member.username.eq(Expressions.stringTemplate("function('lower', {0})", member.username)))
+                .fetch();
+
+        for (String s : result) {
+            System.out.println("s = " + s);
+        }
+
+        List<String> result2 = queryFactory
+                .select(member.username)
+                .from(member)
+                .where(member.username.eq(member.username.lower()))
+                .fetch();
+
+        for (String s : result2) {
+            System.out.println("s = " + s);
+        }
+        //then
+    }
+
+
 }
 
 
