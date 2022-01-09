@@ -99,8 +99,6 @@ class MemberQuerydslJpaRepositoryTest {
 
     /**
      * 동적 쿼리 짤때 주의점은 반드시 조건이 있거나, 또는 페이징 처리가 반드시 들어가야 한다.
-     *
-     * @throws Exception
      */
     @Test
     public void searchByBuilderTest() throws Exception {
@@ -138,6 +136,10 @@ class MemberQuerydslJpaRepositoryTest {
         assertThat(result2).extracting("username").containsExactly("member3", "member4");
     }
 
+    /**
+     * 동적 쿼리 짤때 주의점은 반드시 조건이 있거나, 또는 페이징 처리가 반드시 들어가야 한다.
+     * 해당 where 절 사용을 추천한다.
+     */
     @Test
     public void searchByWhereTest() throws Exception {
         //given
