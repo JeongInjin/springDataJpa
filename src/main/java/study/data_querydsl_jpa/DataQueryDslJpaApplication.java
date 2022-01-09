@@ -17,6 +17,12 @@ public class DataQueryDslJpaApplication {
         SpringApplication.run(DataQueryDslJpaApplication.class, args);
     }
 
+    //스프링 Bean 에 JPAQueryFactory를 등록한다
+//    @Bean
+//    JPAQueryFactory jpaQueryFactory(EntityManager em) {
+//        return new JPAQueryFactory(em);
+//    }
+
     //interface 에서 method 가 하나면 람다형식으로 변경 가능하다.
     //등록 및 수정 될때마다 AuditorAware 를 호출하여 자동으로 값을 채워 넣어 준다.
     @Bean
