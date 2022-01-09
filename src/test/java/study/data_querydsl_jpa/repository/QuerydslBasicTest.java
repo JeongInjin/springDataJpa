@@ -1008,6 +1008,91 @@ public class QuerydslBasicTest {
         return usernameEq(usernameCond).and(ageEq(ageCond));
     }
 
+    /**
+     * 수정, 삭제 벌크 연산
+     * bulk 연산은 영속성 컨텍스트를 무시하고 쿼리를 날려버린다.
+     */
+    @Test
+    public void bulkUpdate() throws Exception {
+        //given
+        //member1 -> member1
+        //member2 -> member2
+        //member3 -> member3
+        //member4 -> member4
+
+        List<Member> initResult = queryFactory
+                .selectFrom(member)
+                .fetch();
+
+        for (Member member : initResult) {
+            System.out.println("initResult = " + member);
+        }
+
+        //update excute
+        long count = queryFactory
+                .update(member)
+                .set(member.username, "비회원")
+                .where(member.age.lt(28))
+                .execute();
+        System.out.println("updateMember count : " + count);
+
+        //member1 -> 비회원
+        //member2 -> 비회원
+        //member3 -> 유지
+        //member4 -> 유지
+        //를 기대했지만 initResult 와 같은 값이 나온다.
+        List<Member> updateMember = queryFactory
+                .selectFrom(member)
+                .fetch();
+        //영속성 컨텍스트 때문에 디비에서 가져온 데이터가 이미 영속성 컨텍스르로 관리되어 있는 줄 알고 디비데이터를 버려버린다.
+        for (Member member : updateMember) {
+            System.out.println("updateMember = " + member);
+        }
+        //그로인해 bulk 연산자를 사용후에는 flush, clear 로 비워버리자.
+        em.flush();
+        em.clear();
+
+        List<Member> result = queryFactory
+                .selectFrom(member)
+                .fetch();
+
+        for (Member member : result) {
+            System.out.println("resultMember = " + member);
+        }
+
+        //when
+
+        //then
+    }
+
+    @Test
+    public void bulkAdd() throws Exception {
+        //given
+
+        //when
+        long count = queryFactory
+                .update(member)
+                .set(member.age, member.age.add(1))
+                .execute();
+
+        System.out.println("count = " + count);
+
+        //then
+    }
+
+    @Test
+    public void bulkDelete() throws Exception {
+        //given
+        //when
+        long count = queryFactory
+                .delete(member)
+                .where(member.age.gt(18))
+                .execute();
+
+        System.out.println("count = " + count);
+
+        //then
+    }
 }
 
 
