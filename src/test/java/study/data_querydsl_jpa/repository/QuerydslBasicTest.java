@@ -13,6 +13,8 @@ import study.data_querydsl_jpa.entity.QMember;
 import study.data_querydsl_jpa.entity.Team;
 
 import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.PersistenceUnit;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -420,4 +422,48 @@ public class QuerydslBasicTest {
         }
 
     }
+
+    @PersistenceUnit
+    EntityManagerFactory emf;
+
+    //페치 조인 미적용
+    @Test
+    public void fetchJoin_No() throws Exception {
+        //given
+        em.flush();
+        em.clear();
+
+        //when
+        Member findMember = queryFactory
+                .selectFrom(member)
+                .where(member.username.eq("member1"))
+                .fetchOne();
+
+        //then
+        //isLoaded -> findMember.getTeam() 했을 시 -> 이미 로딩된 entity 인지 초기화 안된 entity 인지 알려준다. -> 로딩이 안되었으면 false
+        boolean loaded = emf.getPersistenceUnitUtil().isLoaded(findMember.getTeam());
+        assertThat(loaded).as("페치 조인 미적용").isFalse();
+    }
+
+    //페치 조인 적용
+    @Test
+    public void fetchJoin_Use() throws Exception {
+        //given
+        em.flush();
+        em.clear();
+
+        //when
+        Member findMember = queryFactory
+                .selectFrom(member)
+                .join(member.team, team).fetchJoin()
+                .where(member.username.eq("member1"))
+                .fetchOne();
+
+        //then
+        //isLoaded -> findMember.getTeam() 했을 시 -> 이미 로딩된 entity 인지 초기화 안된 entity 인지 알려준다. -> 로딩이 안되었으면 false
+        boolean loaded = emf.getPersistenceUnitUtil().isLoaded(findMember.getTeam());
+        assertThat(loaded).as("페치 조인 적용").isTrue();
+    }
+
+
 }
