@@ -5,6 +5,7 @@ import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
@@ -26,6 +27,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceUnit;
 import java.util.List;
+import java.util.function.Supplier;
 
 import static com.querydsl.jpa.JPAExpressions.select;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -43,6 +45,10 @@ public class QuerydslBasicTest {
 
     @BeforeEach
     public void before() {
+
+        em.createQuery("delete from Member m").executeUpdate();
+        em.createQuery("delete from Team t").executeUpdate();
+
         queryFactory = new JPAQueryFactory(em);
 
         Team teamA = new Team("teamA");
@@ -891,7 +897,7 @@ public class QuerydslBasicTest {
      * 동적 쿼리 - BooleanBuilder 사용
      * 동적 쿼리를 해결하는 두가지 방식
      * BooleanBuilder
-     * Where 다중 파라미터 사용
+     * Where 다중 파라미터 사용 - 추천 합니다.
      */
 
     //1.BooleanBuilder 사용
@@ -902,13 +908,13 @@ public class QuerydslBasicTest {
         Integer ageParam = 10;
 
         //when
-        List<Member> result = searchMember1(usernameParam, ageParam);
+        List<Member> result = searchBooleanBuilder(usernameParam, ageParam);
 
         //then
         assertThat(result.size()).isEqualTo(1);
     }
 
-    private List<Member> searchMember1(String usernameCond, Integer ageCond) {
+    private List<Member> searchBooleanBuilder(String usernameCond, Integer ageCond) {
 
         //BooleanBuilder builder = new BooleanBuilder();
         //방어코드 및 필수로 parameter 가 넘어온다고 가정하면 builder 에 초기값을 줄 수 있다. chaining 가능.
@@ -922,35 +928,87 @@ public class QuerydslBasicTest {
                 .fetch();
     }
 
+    //where 다중 파라미터 사용 - 추천
+    @Test
+    public void dynamicQuery() throws Exception {
+        //given
+        String usernameParam = "member1";
+        Integer ageParam = 10;
+
+        //when
+        List<Member> result = searchWhereParameter(usernameParam, ageParam);
+
+        //then
+        assertThat(result.size()).isEqualTo(1);
+    }
+
+    private List<Member> searchWhereParameter(String usernameCond, Integer ageCond) {
+        return queryFactory
+                .selectFrom(member)
+                //.where(usernameEq(usernameCond), ageEq(ageCond))
+                //.where(nameAndAgeBasicEq(usernameCond, ageCond))
+                .where(nameAndAgeEq(usernameCond, ageCond))
+                .fetch();
+    }
+
+    /*
+    아래 방식은 괜찮긴 한데, allEq 시 username 이 null 일경우 체이닝을 걸 수 없다. 해결 방안을 아래에 기술 합니다.
+    private Predicate usernameEq(String usernameCond) {
+        return usernameCond != null ? member.username.eq(usernameCond) : null;
+    }
+
+    private Predicate ageEq(Integer ageCond) {
+        return ageCond != null ? member.age.eq(ageCond) : null;
+    }
+
+    private BooleanExpression allEq(String usernameCond, Integer ageCond) {
+        return usernameEq(usernameCond).and(ageEq(ageCond));
+    }
+    */
+
+    //1번
+    private BooleanBuilder nameAndAgeBasicEq(String usernameCond, Integer ageCond) {
+        return usernameBasicEq(usernameCond).and(ageBasicEq(ageCond));
+    }
+
+    private BooleanBuilder usernameBasicEq(String usernameCond) {
+        if (usernameCond == null) {
+            return new BooleanBuilder();
+        } else {
+            return new BooleanBuilder(member.username.eq(usernameCond));
+        }
+    }
+
+    private BooleanBuilder ageBasicEq(Integer ageCond) {
+        if (ageCond == null) {
+            return new BooleanBuilder();
+        } else {
+            return new BooleanBuilder(member.age.eq(ageCond));
+        }
+    }
+
+    //1번 형식을 람다 형식으로 리펙터링
+    private BooleanBuilder usernameEq(String usernameCond) {
+        return nullSafeBuilder(() -> member.username.eq(usernameCond));
+    }
+
+    private BooleanBuilder ageEq(Integer ageCond) {
+        return nullSafeBuilder(() -> member.age.eq(ageCond));
+    }
+
+    private BooleanBuilder nullSafeBuilder(Supplier<BooleanExpression> f) {
+        try {
+            return new BooleanBuilder(f.get());
+        } catch (IllegalArgumentException e) {
+            return new BooleanBuilder();
+        }
+    }
+
+    private BooleanBuilder nameAndAgeEq(String usernameCond, Integer ageCond) {
+        return usernameEq(usernameCond).and(ageEq(ageCond));
+    }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

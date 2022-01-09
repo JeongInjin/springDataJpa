@@ -9,6 +9,9 @@ public class MemberDslDto {
     private String username;
     private int age;
 
+    public MemberDslDto() {
+    }
+
     @QueryProjection
     public MemberDslDto(String username, int age) {
         this.username = username;
