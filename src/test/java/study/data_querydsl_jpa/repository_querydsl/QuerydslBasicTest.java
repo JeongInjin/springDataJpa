@@ -1,4 +1,4 @@
-package study.data_querydsl_jpa.repository;
+package study.data_querydsl_jpa.repository_querydsl;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.QueryResults;

@@ -1,14 +1,20 @@
 package study.data_querydsl_jpa.repository_querydsl;
 
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.stereotype.Repository;
+import study.data_querydsl_jpa.dto.MemberSearchCondition;
+import study.data_querydsl_jpa.dto.MemberTeamDto;
+import study.data_querydsl_jpa.dto.QMemberTeamDto;
 import study.data_querydsl_jpa.entity.Member;
 
 import javax.persistence.EntityManager;
 import java.util.List;
 import java.util.Optional;
 
+import static org.springframework.util.StringUtils.hasText;
 import static study.data_querydsl_jpa.entity.QMember.member;
+import static study.data_querydsl_jpa.entity.QTeam.team;
 
 /**
  * @RequiredArgsConstructor 식으로 사용하려면 application starter 에
@@ -68,4 +74,64 @@ public class MemberQuerydslJpaRepository {
                 .where(member.username.eq(username))
                 .fetch();
     }
+
+    /**
+     * 조회조건 추가
+     */
+    public List<MemberTeamDto> searchByBuilder(MemberSearchCondition condition) {
+
+        BooleanBuilder builder = new BooleanBuilder();
+        if (hasText(condition.getUsername())) {
+            builder.and(member.username.eq(condition.getUsername()));
+        }
+        if (hasText(condition.getTeamName())) {
+            builder.and(team.name.eq(condition.getTeamName()));
+        }
+        if (condition.getAgeGoe() != null) {
+            builder.and(member.age.goe(condition.getAgeGoe()));
+        }
+        if (condition.getAgeLoe() != null) {
+            builder.and(member.age.loe(condition.getAgeLoe()));
+        }
+
+        return queryFactory
+                .select(new QMemberTeamDto(
+                        member.id,
+                        member.username,
+                        member.age,
+                        team.id,
+                        team.name
+                ))
+                .from(member)
+                .leftJoin(member.team, team)
+                .where(builder)
+                .fetch();
+    }
+
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
