@@ -9,8 +9,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import study.data_querydsl_jpa.dto.MemberDto;
+import study.data_querydsl_jpa.dto.MemberSearchCondition;
+import study.data_querydsl_jpa.dto.MemberTeamDto;
 import study.data_querydsl_jpa.entity.Member;
 import study.data_querydsl_jpa.repository.MemberRepository;
+import study.data_querydsl_jpa.repository_querydsl.MemberQuerydslJpaRepository;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -18,13 +23,27 @@ public class MemberController {
 
     private final MemberRepository memberRepository;
 
-//    @PostConstruct
+    /**
+     * ================================================================================================================
+     * 신규버전 추가분
+     */
+
+    private final MemberQuerydslJpaRepository memberQuerydslJpaRepository;
+
+    @GetMapping("/v1/members")
+    public List<MemberTeamDto> searchMemberV1(MemberSearchCondition condition) {
+        return memberQuerydslJpaRepository.searchByBuilder(condition);
+    }
+
+
+    /* 추가 끝 ======================================================================================================*/
+
+    //    @PostConstruct
 //    public void init() {
 //        for (int i = 0; i < 100; i++) {
 //            memberRepository.save(new Member("member" + i, i));
 //        }
 //    }
-
     @GetMapping("/members/{id}")
     public String findMember(@PathVariable("id") Long id) {
         //Optinal을 이용하자..
