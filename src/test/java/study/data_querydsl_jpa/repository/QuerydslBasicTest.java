@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 import study.data_querydsl_jpa.dto.MemberDslDto;
+import study.data_querydsl_jpa.dto.QMemberDslDto;
 import study.data_querydsl_jpa.dto.UserDslDto;
 import study.data_querydsl_jpa.entity.Member;
 import study.data_querydsl_jpa.entity.QMember;
@@ -857,4 +858,32 @@ public class QuerydslBasicTest {
 
         //then
     }
+
+    /**
+     * 프로젝션과 결과 반환 - @QueryProjection
+     * DTO 에 @QueryProjection 붙인뒤, gradle -> other -> compileQuerydsl 실행
+     * QMemberDslDto 안에보면 parameter 형식이 지정되어 있어, 컴파일 시점에 타입을 체크해 주는 장점이 있다.
+     * constructor 와의 차이점은 컴파일 시점에 오류를 잡아내냐 못하냐의 차이 정도 있다.
+     * 단점? 문제점?
+     * 이 방법은 컴파일러로 타입을 체크할 수 있으므로 가장 안전한 방법이다. 다만 DTO에 QueryDSL 어노테이션을 유지해야 하는 점과 DTO까지 Q 파일을 생성해야 하는 단점이 있다.
+     * ->DTO 에서는 querydsl 의 의존성이 없었는데 @QueryProjection 에 의해 의존성하게 된다. 추후에 querydsl 을 제거되는 상황이면 소스 수정이 불가피 하다.
+     * querydsl 에 의존하고 있어서 순수한 DTO 라 보긴 힘들다.
+     * 아키텍쳐를 잘 생각해보고, 협의하게 진행을 해 보자.
+     */
+    @Test
+    public void findByQueryProjection() throws Exception {
+        //given
+        List<MemberDslDto> result = queryFactory
+                .select(new QMemberDslDto(member.username, member.age))
+                .from(member)
+                .fetch();
+
+        for (MemberDslDto memberDslDto : result) {
+            System.out.println("memberDslDto = " + memberDslDto);
+        }
+        //when
+
+        //then
+    }
+
 }
