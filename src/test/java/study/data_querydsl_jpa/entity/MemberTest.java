@@ -7,6 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 import study.data_querydsl_jpa.repository.MemberRepository;
+import study.data_querydsl_jpa.repository.TeamRepository;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -25,6 +26,9 @@ class MemberTest {
 
     @Autowired
     MemberRepository memberRepository;
+
+    @Autowired
+    TeamRepository teamRepository;
 
     @BeforeEach
     public void init() {
@@ -101,6 +105,32 @@ class MemberTest {
         assertThat(findMember.isPresent()).isTrue();
         assertThat(findMember.get().getUsername()).isEqualTo("member2");
 
+    }
+
+    @Test
+    @Rollback(value = false)
+    public void jpa() throws Exception {
+        //given
+        Team team = new Team("teamTest1");
+        teamRepository.save(team);
+
+        Member member = new Member("testMember1", 10, team);
+        memberRepository.save(member);
+
+        //when
+        List<Member> result = memberRepository.findByUsername("testMember1");
+        for (Member m : result) {
+            System.out.println("member = " + m.getTeam());
+        }
+        Team teamResult = teamRepository.getById(team.getId());
+
+        //then
+        assertThat(result.size()).isEqualTo(1);
+        assertThat(result.get(0).getTeam().getName()).isEqualTo("teamTest1");
+        assertThat(result.get(0).getUsername()).isEqualTo("testMember1");
+        assertThat(result.get(0).getAge()).isEqualTo(10);
+        assertThat(teamResult.getName()).isEqualTo("teamTest1");
+        assertThat(teamResult.getId()).isEqualTo(1);
     }
 
 }
