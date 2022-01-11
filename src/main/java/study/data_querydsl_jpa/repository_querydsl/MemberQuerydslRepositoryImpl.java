@@ -6,7 +6,6 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.repository.support.PageableExecutionUtils;
 import study.data_querydsl_jpa.dto.MemberSearchCondition;
 import study.data_querydsl_jpa.dto.MemberTeamDto;
 import study.data_querydsl_jpa.dto.QMemberTeamDto;
@@ -21,6 +20,13 @@ import static study.data_querydsl_jpa.entity.QTeam.team;
 
 /**
  * 조건 : MemberQueryRepository 를 사용 할 것이기 때문에 MemberQueryRepository + Impl 이라는 이름으로 만들어 주어야 한다.
+ * 그냥 complex 메소드 정도 쓰는게 좋을 듯..
+ * <p>
+ * 페이징 쿼리 - 참조 : https://devwithpug.github.io/java/querydsl-with-datajpa/
+ * Querydsl 의 이전 버전에서는 fetchResults(), fetchCount() 메소드를 이용하여 페이징 쿼리를 작성했지만 5.0.0 버전에서 deprecated 되었다. 이유는 다음과 같다
+ * fetchCount(): An implementation is allowed to fall back to fetch().size()
+ * count 쿼리가 모든 dialect 에서 또는 다중 그룹 쿼리에서 완벽하게 지원되지 않기 때문에, count 정도는 자바에서 처리하도록 권고 하고 있다.
+ * --> 그냥 내가 하던 방식대로 select 쿼리 한번, 최적화 카운트 쿼리 한번 식으로 호출하는게 좋을 듯 하다..
  */
 public class MemberQuerydslRepositoryImpl implements MemberQuerydslRepositoryCustom {
 
@@ -123,10 +129,11 @@ public class MemberQuerydslRepositoryImpl implements MemberQuerydslRepositoryCus
     }
 
     /**
-     * 스프링 데이터 라이브러리가 제공
+     * 스프링 데이터 라이브러리가 제공 - 안되는 듯 하다.
      * count 쿼리가 생략 가능한 경우 생략해서 처리
      * 페이지 시작이면서 컨텐츠 사이즈가 페이지 사이즈보다 작을 때
      * 마지막 페이지 일 때 (offset + 컨텐츠 사이즈를 더해서 전체 사이즈 구함)
+     * 권장하지않아서 사용 안되는 듯 하다
      */
     public Page<MemberTeamDto> searchPageComplexImproved(MemberSearchCondition condition, Pageable pageable) {
         List<MemberTeamDto> content = queryFactory
@@ -162,7 +169,8 @@ public class MemberQuerydslRepositoryImpl implements MemberQuerydslRepositoryCus
                 );
 
 //        return PageableExecutionUtils.getPage(content, pageable, () -> countQuery.fetch().size());
-        return PageableExecutionUtils.getPage(content, pageable, countQuery.fetch()::size);
+//        return PageableExecutionUtils.getPage(content, pageable, countQuery.fetch()::size);
+        return new PageImpl<>(content, pageable, countQuery.fetch().size());
     }
 
     //Predicate 반환값 보다 BooleanExpression 하는게 더 좋을 듯하다, BooleanExpression 는 and, or 로 체이닝이 가능하다.

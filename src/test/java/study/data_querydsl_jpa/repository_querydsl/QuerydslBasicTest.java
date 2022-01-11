@@ -252,7 +252,7 @@ public class QuerydslBasicTest {
     }
 
     @Test
-    public void pageing1() throws Exception {
+    public void paging1() throws Exception {
         //given
 
         //when
@@ -276,7 +276,7 @@ public class QuerydslBasicTest {
      * @throws Exception
      */
     @Test
-    public void pageing2() throws Exception {
+    public void paging2() throws Exception {
         //given
 
         //when
@@ -459,6 +459,7 @@ public class QuerydslBasicTest {
         //then
         //isLoaded -> findMember.getTeam() 했을 시 -> 이미 로딩된 entity 인지 초기화 안된 entity 인지 알려준다. -> 로딩이 안되었으면 false
         boolean loaded = emf.getPersistenceUnitUtil().isLoaded(findMember.getTeam());
+        System.out.println("===========================================================");
         assertThat(loaded).as("페치 조인 미적용").isFalse();
     }
 
