@@ -15,6 +15,7 @@ import study.data_querydsl_jpa.entity.Member;
 import study.data_querydsl_jpa.repository.MemberRepository;
 import study.data_querydsl_jpa.repository_querydsl.MemberQuerydslJpaRepository;
 import study.data_querydsl_jpa.repository_querydsl.MemberQuerydslRepository;
+import study.data_querydsl_jpa.repository_querydsl.MemberTestRepositoryBySupport;
 
 import java.util.List;
 
@@ -23,6 +24,8 @@ import java.util.List;
 public class MemberController {
 
     private final MemberRepository memberRepository;
+
+    private final MemberTestRepositoryBySupport memberTestRepositoryBySupport;
 
     /**
      * ================================================================================================================
@@ -52,6 +55,18 @@ public class MemberController {
     public Page<MemberTeamDto> searchMemberV4(MemberSearchCondition condition, Pageable pageable) {
         return memberQuerydslRepository.searchPageComplexImproved(condition, pageable);
     }
+
+    @GetMapping("/v5/members")
+    public Page<Member> searchMemberV5ByCustomSupport(MemberSearchCondition condition, Pageable pageable) {
+        return memberTestRepositoryBySupport.applyPagination(condition, pageable);
+    }
+
+    @GetMapping("/v6/members")
+    public Page<MemberTeamDto> searchMemberV6ByCustomSupportImproved(MemberSearchCondition condition, Pageable pageable) {
+        return memberTestRepositoryBySupport.applyPaginationImproved(condition, pageable);
+    }
+
+
 
     /* 추가 끝 ======================================================================================================*/
 

@@ -149,6 +149,16 @@ class MemberQuerydslRepositoryTest {
      * 단점 : sort 기능이 정상 동작하지 않음. QueryFactory 를 제공하지 않음.
      */
 
+    /*
+     * querydsl 지원 클래스 직접 만들기. ( QuerydslRepositorySupport 의 상위호횐 개념이랄까...)
+     * 목표 :
+     * 1.스프링 데이터가 제공하는 페이징을 편리하게 변환
+     * 2.페이징과 카운트 쿼리 분리 가능하게
+     * 3.스프링 데이터 sort 지원
+     * select(), selectFrom() 으로 시작 가능하게.
+     * EntityManager, QueryFactory 제공.
+     * */
+
 
 }
 

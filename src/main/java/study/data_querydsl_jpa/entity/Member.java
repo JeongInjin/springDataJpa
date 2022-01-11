@@ -21,6 +21,7 @@ public class Member extends BaseEntity {
     private String username;
     private int age;
 
+    //    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "team_id")
     private Team team;
@@ -47,7 +48,7 @@ public class Member extends BaseEntity {
         team.getMembers().add(this);
     }
 
-    public void changeName(String usernName) {
-        this.username = usernName;
+    public void changeName(String username) {
+        this.username = username;
     }
 }
