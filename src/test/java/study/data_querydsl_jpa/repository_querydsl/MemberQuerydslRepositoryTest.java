@@ -122,4 +122,55 @@ class MemberQuerydslRepositoryTest {
         assertThat(result.getSize()).isEqualTo(3);
         assertThat(result.getContent()).extracting("username").containsExactly("member1", "member2", "member3");
     }
+
+    /**
+     * 아래 기술 되는 기능은 스프링 JPA 에서 제공은 하지만 조인되거나 조금만 복잡해줘도 사용이 힘들다.
+     * 그냥 편하게 보시면 될 듯 하다.
+     *
+     * QuerydslPredicateExecutor - > jpaRepository 가 제공하는 함수들을 좀더 편하고 구체적으로 쓸 수 있게 도와준다.
+     * -> 상속을 하나 받아야 하고, left join 이 지원이 되지 않는다. 예제 코드 X 혼란만 가중시킴.
+     * 클라이언트가 querydsl 에 의존한다.
+     *
+     * Querydsl Web 지원
+     * -> 기술은 좋아보이나 QuerydslPredicateExecutor 마찬가지로 left join 이 안되고, 부가적인 기능도 equal 정보만 제공하며,
+     * 한계가 명확하여 예제 코드 및 적용은 하지 않는다.
+     * 컨트롤러가 querydsl 에 의존한다.
+     *
+     * QuerydslRepositorySupport (추상 클래스) -> 사용 예시.
+     * 1.사용하려는 repository 클래스로 가서 상속을 받는다. ex) MemberQueryRepositoryImpl -> extends QuerydslRepositorySupport
+     * 2.의존성 받는 부분의 코드를 주석처리하고 constructor matching super 를 생성한다.
+     * ex)  public MemberQuerydslRepositoryImpl() {
+     *         super(Member.class);
+     *     }
+     * 여러 가지 기능을 제공을 하는데, EntityManager 도 직접 받기 때문에 사용 할 수 있고, 제공되는 Util 성의 QueryDsl 등의 기능을 제공한다
+     * -> 사용하려면 search 메서드의 구문이 변경이 되는데 from 부터 시작해야 하는 단점이 있다.(from.where.select.fetch)
+     * -> 예전 버전에서 from 으로 시작해서 그렇고, 그 당시 QueryFactory 가 나오기 전이였다.
+     * -> 엔티티매니저, 등 대신 주입을 받아주고 편리한 점도 있고, 페이징을 편리하게 제공해 준다.(offset, limit 등 대신 해줌)
+     * 단점 : sort 기능이 정상 동작하지 않음. QueryFactory 를 제공하지 않음.
+     */
+
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
