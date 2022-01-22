@@ -65,6 +65,7 @@ class MemberTest {
             System.out.println("-> member.team = " + member.getTeam());
         }
         System.out.println("===============================================");
+        System.out.println("members.size() = " + members.size());
         Team teamC = new Team("teamC");
         em.persist(teamC);
         member1.changeTeam(teamC);

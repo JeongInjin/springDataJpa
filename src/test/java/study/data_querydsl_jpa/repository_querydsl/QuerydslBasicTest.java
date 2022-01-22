@@ -516,7 +516,7 @@ public class QuerydslBasicTest {
                 .where(member.age.eq(
 //                        JPAExpressions
 //                                .select(memberSub.age.max())
-//                                .from(memberSub)
+//                                .from(memberSub)@
                         select(memberSub.age.max())
                                 .from(memberSub)
                 ))
